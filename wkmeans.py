@@ -61,9 +61,11 @@ class KMeans():
 
     Keyword arguments:
     X     -- the data (default None; thus auto-generated, see below);
-    N     -- number of data points to generate (default 0);
+    N     -- number of unique data points to generate (default 0);
+    c     -- number of non-unique points represented by a data point (default
+             None; to mean every data point is unique);
     alpha -- the exponent used to calculate the scaling factor (default 0);
-    beta  -- the stickiness parameter used during time-averaging.
+    beta  -- the stickiness parameter used during time-averaging (default 0).
 
     ***
 
@@ -71,7 +73,7 @@ class KMeans():
 
     Weighted k-means author: Olivia Guest.
     """
-    def __init__(self, K, X=None, N=0, alpha=0, beta=0):
+    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0):
 
         self.K = K
         if X is None:
@@ -93,7 +95,7 @@ class KMeans():
 
         # Numpy array of clusters containing their index and member items.
         self.clusters = None
-        self.cluster_indices = np.asarray([None for i in self.X])
+        # self.cluster_indices = np.asarray([None for i in self.X])
 
         # What kind of initialisation we want, only vanilla or k++ available:
         self.method = None
@@ -107,6 +109,15 @@ class KMeans():
 
         # The stickiness used within the time-averaging.
         self.beta = beta
+
+        # How many counts are represented by a single data point:
+        if c is None:
+            self.counts_per_data_point = [1 for x in self.X]
+        else:
+            self.counts_per_data_point = c
+
+        # How many counts are in each cluster:
+        self.counts_per_cluster = [0 for x in range(self.K)]
 
     def _init_gauss(self, N):
         """Create test data in which there are three bivariate Gaussians. Their
@@ -131,7 +142,7 @@ class KMeans():
         n_samples = int(0.75 * N)
 
 
-        data, labels_true = sklearn.datasets.make_blobs(n_samples=n_samples, \
+        data, labels_true = sklearn.datasets.make_blobs(n_samples=n_samples,\
                             centers=centers, cluster_std=cluster_std)
 
         # Now to generate the extra data points for the top of the triangle:
@@ -164,10 +175,10 @@ class KMeans():
                 cs = cm.spectral(1.*m/K)
                 cs = next(palette)
                 # b) plot the data points in the cluster;
-                plt.plot(zip(*clus[m])[0], zip(*clus[m])[1], '.', \
+                plt.plot(zip(*clus[m])[0], zip(*clus[m])[1], '.',\
                          markersize=8, color=cs, alpha=0.5)
                 # and c) plot the centroid of the cluster.
-                plt.plot(mu[m][0], mu[m][1], 'o', marker='*', \
+                plt.plot(mu[m][0], mu[m][1], 'o', marker='*',\
                          markersize=12, color=cs,  markeredgecolor='white',
                          markeredgewidth=1.0)
         else:
@@ -184,37 +195,46 @@ class KMeans():
         plt.title('\n'.join([pars, title]), fontsize=16)
 
         # Finally, save the figure as a PNG.
-        plt.savefig('kpp_N%s_K%s_alpha%s_%s.png' % (str(self.N), str(self.K), \
-                    str(self.alpha), str(snapshot)), \
+        plt.savefig('kpp_N%s_K%s_alpha%s_%s.png' % (str(self.N), str(self.K),\
+                    str(self.alpha), str(snapshot)),\
                     bbox_inches='tight', dpi=200)
 
     @counted
     def _cluster_points(self):
         """Cluster the points."""
-        clusters = [[] for i in range(self.K)]
 
+        # Initialise the values for the clusters and their counts
+        clusters = [[] for i in range(self.K)]
+        counts_per_cluster = [0 for i in range(self.K)]
+
+        ########################################################################
         #Firstly perform classical k-means, weighting the Euclidean distances.
         ########################################################################
         for index, x in enumerate(self.X):
                 # For each data point x, find the minimum weighted distance to
                 # cluster i from point x.
-                bestmukey = min([(i[0], \
-                                self.scaling_factor[i[0]] * \
-                                np.linalg.norm(x-self.mu[i[0]])) \
+                bestmukey = min([(i[0],\
+                                self.scaling_factor[i[0]] *\
+                                np.linalg.norm(x-self.mu[i[0]]))\
                                 for i in enumerate(self.mu)],
                             key=lambda t:t[1])[0]
                 # Add the data point x to the cluster it is closest to.
                 clusters[bestmukey].append(x)
-                self.cluster_indices[index]  = bestmukey
+                counts_per_cluster[bestmukey] += self.counts_per_data_point[index]
+                # self.cluster_indices[index]  = bestmukey
 
         # Update the clusters.
         self.clusters = clusters
-        print '\tNumber of items per cluster: ', [len(x) for x in self.clusters]
-        # assert [np.count_nonzero(self.cluster_indices == i) \
+        self.counts_per_cluster = counts_per_cluster
+        print '\tNumber of unique items per cluster: ', [len(x) for x in self.clusters]
+        print '\tNumber of items per cluster: ', self.counts_per_cluster
+
+        # assert [np.count_nonzero(self.cluster_indices == i)\
         #         for i in range(self.K)] == [len(x) for x in self.clusters]
-        # print '\tNumber of items per cluster: ', \
+        # print '\tNumber of items per cluster: ',\
         #         [np.count_nonzero(self.cluster_indices == i) for i in range(self.K)]
 
+        ########################################################################
         # Secondly, calculate the scaling factor for each cluster.
         ########################################################################
         # Now that we have clusters to work with (at initialisation we don't),
@@ -222,7 +242,8 @@ class KMeans():
         # cardinality of the cluster raised to the power alpha, so it is purely
         # a function of the number of items in each cluster and the value of
         # alpha.
-        scaling_factor = np.asarray([len(x)**self.alpha for x in self.clusters])
+        scaling_factor = np.asarray([self.counts_per_cluster[index]**self.alpha\
+                                for index, cluster in enumerate(self.clusters)])
 
         # Now we have all the numerators, divide them by their sum. This is also
         # known as the Luce choice share.
@@ -233,14 +254,14 @@ class KMeans():
         # assert np.around(np.sum(scaling_factor)) == 1
 
         # Now we want to employ time-averaging on the scaling factor.
-        scaling_factor = (1 - self.beta) * scaling_factor + \
+        scaling_factor = (1 - self.beta) * scaling_factor +\
                          (self.beta) * self.scaling_factor
 
         # Update the scaling factors for the next time step.
         self.scaling_factor = scaling_factor
 
         # The scaling factors should sum to one here too.
-        # print 'Sum of scaling factors:', \
+        # print 'Sum of scaling factors:',\
         #         np.around(np.sum(self.scaling_factor))
         # assert np.around(np.sum(self.scaling_factor)) == 1
         print '\tScaling factors per cluster: ', self.scaling_factor
@@ -276,7 +297,7 @@ class KMeans():
 
         # Return true if the items in each cluster have not changed much since
         # the last time this was run
-        return dist < 0.001
+        return dist < 0.00001
 
     def find_centers(self, method='random'):
         """Find the centroids per cluster until equilibrium."""
@@ -292,7 +313,7 @@ class KMeans():
             # If method of initialisation is not k++, use random centeroids.
             self.mu = random.sample(X, K)
 
-        while not self._has_converged() and \
+        while not self._has_converged() and\
               self._cluster_points.calls < max_runs:
             print 'Run: ', self._cluster_points.calls
             # While the algorithm has neither converged nor been run too many
@@ -339,31 +360,5 @@ class KPlusPlus(KMeans):
         plt.ylim(-1,1)
         plt.plot(zip(*X)[0], zip(*X)[1], '.', alpha=0.5)
         plt.plot(zip(*self.mu)[0], zip(*self.mu)[1], 'ro')
-        plt.savefig('kpp_init_N%s_K%s.png' % (str(self.N),str(self.K)), \
+        plt.savefig('kpp_init_N%s_K%s.png' % (str(self.N),str(self.K)),\
                     bbox_inches='tight', dpi=200)
-
-if __name__ == "__main__":
-    # This code runs the k-means++ algorithm on some test data and saves the
-    # output to an image file in the same directory.
-
-    from datetime import datetime
-    startTime = datetime.now()
-
-    # Initialise the class with some default values:
-    kmeans = km.KPlusPlus(3, N=600, alpha=3, beta=0.9)
-
-    # If you have your own data use:
-    # kmeans = km.KPlusPlus(3, X=my_data, alpha=3, beta=0.9)
-
-    # Initialise centroids using k-means++...
-    kmeans.init_centers()
-    # and run to find clusters:
-    kmeans.find_centers(method='++')
-
-    # Now plot the result:
-    kmeans.plot_clusters(kmeans.plot_clusters.calls)
-
-    print 'The End!'
-    print '\tRun time: ', datetime.now() - startTime
-    print '\tTotal runs: ', kmeans._cluster_points.calls
-    print '\tNumber of items per cluster: ', [len(x) for x in kmeans.clusters]
