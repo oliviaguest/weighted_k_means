@@ -43,16 +43,6 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import seaborn as sns
 
-def counted(f):
-    """Decorator for returning number of times a function has been called.
-    Author: FogleBird; Source: http://stackoverflow.com/a/21717396;
-    """
-    def wrapped(*args, **kwargs):
-        wrapped.calls += 1
-        return f(*args, **kwargs)
-    wrapped.calls = 0
-    return wrapped
-
 class KMeans():
     """Class for running weighted k-means.
 
@@ -73,6 +63,17 @@ class KMeans():
 
     Weighted k-means author: Olivia Guest.
     """
+
+    def counted(f):
+        """Decorator for returning number of times a function has been called.
+        Author: FogleBird; Source: http://stackoverflow.com/a/21717396;
+        """
+        def wrapped(*args, **kwargs):
+            wrapped.calls += 1
+            return f(*args, **kwargs)
+        wrapped.calls = 0
+        return wrapped
+
     def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0):
 
         self.K = K
@@ -95,7 +96,7 @@ class KMeans():
 
         # Numpy array of clusters containing their index and member items.
         self.clusters = None
-        # self.cluster_indices = np.asarray([None for i in self.X])
+        self.cluster_indices = np.asarray([None for i in self.X])
 
         # What kind of initialisation we want, only vanilla or k++ available:
         self.method = None
@@ -118,6 +119,8 @@ class KMeans():
 
         # How many counts are in each cluster:
         self.counts_per_cluster = [0 for x in range(self.K)]
+
+        self.runs = 0
 
     def _init_gauss(self, N):
         """Create test data in which there are three bivariate Gaussians. Their
@@ -221,7 +224,7 @@ class KMeans():
                 # Add the data point x to the cluster it is closest to.
                 clusters[bestmukey].append(x)
                 counts_per_cluster[bestmukey] += self.counts_per_data_point[index]
-                # self.cluster_indices[index]  = bestmukey
+                self.cluster_indices[index]  = bestmukey
 
         # Update the clusters.
         self.clusters = clusters
@@ -313,9 +316,9 @@ class KMeans():
             # If method of initialisation is not k++, use random centeroids.
             self.mu = random.sample(X, K)
 
-        while not self._has_converged() and\
-              self._cluster_points.calls < max_runs:
-            print 'Run: ', self._cluster_points.calls
+        while not self._has_converged() and self.runs < max_runs:
+            #   self._cluster_points.calls < max_runs:
+            print 'Run: ', self.runs, ', alpha: ', self.alpha
             # While the algorithm has neither converged nor been run too many
             # times:
             # a) keep track of old centroids;
@@ -324,6 +327,12 @@ class KMeans():
             self._cluster_points()
             # c) recalculate the centers per cluster.
             self._reevaluate_centers()
+            self.runs += 1
+
+        print 'The End!'
+        print '\tTotal runs: ', self.runs
+        print '\tNumber of unique items per cluster: ', [len(x) for x in self.clusters]
+        print '\tNumber of items per cluster: ', self.counts_per_cluster
 
 class KPlusPlus(KMeans):
     """Augment the KMeans class with k-means++ capabilities.
