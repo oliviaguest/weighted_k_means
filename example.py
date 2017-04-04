@@ -15,7 +15,8 @@ startTime = datetime.now()
 N = 5000
 # Random counts because each data point is not unique and can even be "empty",
 # i.e., have a count of zero:
-random_counts = np.random.randint(100, size=(N))
+# random_counts = np.random.randint(100, size=(N)) # integers for the counts
+random_counts = np.random.random_sample((N,)) * 100 # floats for the counts
 
 # Initialise the class with some default values:
 kmeans = km.KPlusPlus(3, N=N, c=random_counts, alpha=3, beta=0.9)

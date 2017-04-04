@@ -318,7 +318,8 @@ class KMeans():
 
         while not self._has_converged() and self.runs < max_runs:
             #   self._cluster_points.calls < max_runs:
-            print 'Run: ', self.runs, ', alpha: ', self.alpha
+            print 'Run:', self.runs, ', alpha:', self.alpha,\
+                ', beta:', self.beta
             # While the algorithm has neither converged nor been run too many
             # times:
             # a) keep track of old centroids;
@@ -331,7 +332,8 @@ class KMeans():
 
         print 'The End!'
         print '\tTotal runs: ', self.runs
-        print '\tNumber of unique items per cluster: ', [len(x) for x in self.clusters]
+        print '\tNumber of unique items per cluster: ',\
+            [len(x) for x in self.clusters]
         print '\tNumber of items per cluster: ', self.counts_per_cluster
 
 class KPlusPlus(KMeans):
