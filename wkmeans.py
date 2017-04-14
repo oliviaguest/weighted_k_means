@@ -43,6 +43,8 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import seaborn as sns
 
+from geopy.distance import great_circle
+
 class KMeans():
     """Class for running weighted k-means.
 
@@ -218,7 +220,8 @@ class KMeans():
                 # cluster i from point x.
                 bestmukey = min([(i[0],\
                                 self.scaling_factor[i[0]] *\
-                                np.linalg.norm(x-self.mu[i[0]]))\
+                                great_circle(x, self.mu[i[0]]).km)\
+                                # np.linalg.norm(x-self.mu[i[0]]))\ #Euclidean
                                 for i in enumerate(self.mu)],
                             key=lambda t:t[1])[0]
                 # Add the data point x to the cluster it is closest to.
