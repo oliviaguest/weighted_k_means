@@ -46,7 +46,7 @@ import seaborn as sns
 def gc(a, b):
     from geopy.distance import great_circle
     return great_circle(a, b).km
-    
+
 class KMeans():
     """Class for running weighted k-means.
 
@@ -378,4 +378,5 @@ class KPlusPlus(KMeans):
         plt.ylim(-1,1)
         plt.plot(zip(*X)[0], zip(*X)[1], '.', alpha=0.5)
         plt.plot(zip(*self.mu)[0], zip(*self.mu)[1], 'ro')
-        plt.savefig('kpp_init_N%s_K%s.png' % (str
+        plt.savefig('kpp_init_N%s_K%s.png' % (str(self.N),str(self.K)),\
+                    bbox_inches='tight', dpi=200)
