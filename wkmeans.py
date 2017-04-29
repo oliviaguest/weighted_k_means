@@ -43,8 +43,10 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import seaborn as sns
 
-from geopy.distance import great_circle
-
+def gc(a, b):
+    from geopy.distance import great_circle
+    return great_circle(a, b).km
+    
 class KMeans():
     """Class for running weighted k-means.
 
@@ -76,7 +78,7 @@ class KMeans():
         wrapped.calls = 0
         return wrapped
 
-    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0):
+    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc):
 
         self.K = K
         if X is None:
@@ -123,6 +125,8 @@ class KMeans():
         self.counts_per_cluster = [0 for x in range(self.K)]
 
         self.runs = 0
+
+        self.dist = dist
 
     def _init_gauss(self, N):
         """Create test data in which there are three bivariate Gaussians. Their
@@ -220,7 +224,7 @@ class KMeans():
                 # cluster i from point x.
                 bestmukey = min([(i[0],\
                                 self.scaling_factor[i[0]] *\
-                                great_circle(x, self.mu[i[0]]).km)\
+                                self.dist(x, self.mu[i[0]]))\
                                 # np.linalg.norm(x-self.mu[i[0]]))\ #Euclidean
                                 for i in enumerate(self.mu)],
                             key=lambda t:t[1])[0]
@@ -348,7 +352,7 @@ class KPlusPlus(KMeans):
         """Calculate the distance of each point to the closest centroids."""
         cent = self.mu
         X = self.X
-        D2 = np.array([min([np.linalg.norm(x-c)**2 for c in cent]) for x in X])
+        D2 = np.array([min([self.dist(x,c)**2 for c in cent]) for x in X])
         self.D2 = D2
 
     def _choose_next_center(self):
@@ -374,5 +378,4 @@ class KPlusPlus(KMeans):
         plt.ylim(-1,1)
         plt.plot(zip(*X)[0], zip(*X)[1], '.', alpha=0.5)
         plt.plot(zip(*self.mu)[0], zip(*self.mu)[1], 'ro')
-        plt.savefig('kpp_init_N%s_K%s.png' % (str(self.N),str(self.K)),\
-                    bbox_inches='tight', dpi=200)
+        plt.savefig('kpp_init_N%s_K%s.png' % (str
