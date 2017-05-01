@@ -78,7 +78,7 @@ class KMeans():
         wrapped.calls = 0
         return wrapped
 
-    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc):
+    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc, label=None):
 
         self.K = K
         if X is None:
@@ -125,8 +125,12 @@ class KMeans():
         self.counts_per_cluster = [0 for x in range(self.K)]
 
         self.runs = 0
-
+        # The distance metric to use, a function that takes a and b and returns
+        # the distrance between the two:
         self.dist = dist
+        # A label, to print out while running k-means, e.g., to distinguish a
+        # specific instance of k-means, etc:
+        self.label = label
 
     def _init_gauss(self, N):
         """Create test data in which there are three bivariate Gaussians. Their
@@ -326,7 +330,9 @@ class KMeans():
         while not self._has_converged() and self.runs < max_runs:
             #   self._cluster_points.calls < max_runs:
             print 'Run:', self.runs, ', alpha:', self.alpha,\
-                ', beta:', self.beta
+                ', beta:', self.beta,
+            if self.label:
+                print 'label:', self.label
             # While the algorithm has neither converged nor been run too many
             # times:
             # a) keep track of old centroids;
