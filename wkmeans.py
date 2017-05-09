@@ -31,7 +31,7 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import division
+from __future__ import division, print_function
 
 import random
 import warnings
@@ -78,7 +78,7 @@ class KMeans():
         wrapped.calls = 0
         return wrapped
 
-    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc, label=None):
+    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc, label=None, verbose=False):
 
         self.K = K
         if X is None:
@@ -131,6 +131,8 @@ class KMeans():
         # A label, to print out while running k-means, e.g., to distinguish a
         # specific instance of k-means, etc:
         self.label = label
+        # How much output to print:
+        self.verbose = verbose
 
     def _init_gauss(self, N):
         """Create test data in which there are three bivariate Gaussians. Their
@@ -240,8 +242,9 @@ class KMeans():
         # Update the clusters.
         self.clusters = clusters
         self.counts_per_cluster = counts_per_cluster
-        print '\tNumber of unique items per cluster: ', [len(x) for x in self.clusters]
-        print '\tNumber of items per cluster: ', self.counts_per_cluster
+        if self.verbose:
+            print('\tNumber of unique items per cluster: ', [len(x) for x in self.clusters])
+            print('\tNumber of items per cluster: ', self.counts_per_cluster)
 
         # assert [np.count_nonzero(self.cluster_indices == i)\
         #         for i in range(self.K)] == [len(x) for x in self.clusters]
@@ -278,7 +281,8 @@ class KMeans():
         # print 'Sum of scaling factors:',\
         #         np.around(np.sum(self.scaling_factor))
         # assert np.around(np.sum(self.scaling_factor)) == 1
-        print '\tScaling factors per cluster: ', self.scaling_factor
+        if self.verbose:
+            print('\tScaling factors per cluster: ', self.scaling_factor)
 
     def _reevaluate_centers(self):
         """Update the controids (aka mu) per cluster."""
@@ -307,7 +311,8 @@ class KMeans():
                                      ' all points rushed away to other'\
                                      ' cluster(s). Try increasing the'\
                                      ' stickiness parameter (beta).')
-            print '\tDistance between previous and current centroids: ', dist
+            if self.verbose:
+                print('\tDistance between previous and current centroids: ', dist)
 
         # Return true if the items in each cluster have not changed much since
         # the last time this was run
@@ -329,10 +334,13 @@ class KMeans():
 
         while not self._has_converged() and self.runs < max_runs:
             #   self._cluster_points.calls < max_runs:
-            print 'Run:', self.runs, ', alpha:', self.alpha,\
-                ', beta:', self.beta,
-            if self.label:
-                print 'label:', self.label
+            if self.verbose:
+                print('Run:', self.runs, ', alpha:', self.alpha,
+                    ', beta:', self.beta,)
+                if self.label:
+                    print('label:', self.label)
+                else:
+                    print()
             # While the algorithm has neither converged nor been run too many
             # times:
             # a) keep track of old centroids;
@@ -343,11 +351,13 @@ class KMeans():
             self._reevaluate_centers()
             self.runs += 1
 
-        print 'The End!'
-        print '\tTotal runs: ', self.runs
-        print '\tNumber of unique items per cluster: ',\
-            [len(x) for x in self.clusters]
-        print '\tNumber of items per cluster: ', self.counts_per_cluster
+        print('The End!')
+        if self.label:
+            print('label:', self.label)
+        print('\tTotal runs: ', self.runs)
+        print('\tNumber of unique items per cluster: ',
+            [len(x) for x in self.clusters])
+        print('\tNumber of items per cluster: ', self.counts_per_cluster)
 
 class KPlusPlus(KMeans):
     """Augment the KMeans class with k-means++ capabilities.
