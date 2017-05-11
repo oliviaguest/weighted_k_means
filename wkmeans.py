@@ -33,10 +33,15 @@
 
 from __future__ import division, print_function
 
+import sys
 import random
 import warnings
 import itertools
 import sklearn.datasets
+
+from colorama import init
+init() # For Windows users.
+from colorama import Fore, Back, Style
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -44,6 +49,8 @@ import matplotlib.cm as cm
 import seaborn as sns
 
 def gc(a, b):
+    """An example of what could be used as a distance metric.
+    """
     from geopy.distance import great_circle
     return great_circle(a, b).km
 
@@ -51,21 +58,27 @@ class KMeans():
     """Class for running weighted k-means.
 
     Required argument:
-    K     -- the number of clusters.
+    K       -- the number of clusters.
 
     Keyword arguments:
-    X     -- the data (default None; thus auto-generated, see below);
-    N     -- number of unique data points to generate (default 0);
-    c     -- number of non-unique points represented by a data point (default
-             None; to mean every data point is unique);
-    alpha -- the exponent used to calculate the scaling factor (default 0);
-    beta  -- the stickiness parameter used during time-averaging (default 0).
+    X       -- the data (default None; thus auto-generated, see below);
+    N       -- number of unique data points to generate (default: 0);
+    c       -- number of non-unique points represented by a data point (default:
+               None; to mean every data point is unique);
+    alpha   -- the exponent used to calculate the scaling factor (default: 0);
+    beta    -- the stickiness parameter used during time-averaging (default: 0);
+    dist    -- custom distance metric for calculating distances between points
+               (default: great circle distance);
+    label   -- offer extra information at runtime about what is being clustered
+               (default: 'My Clustering');
+    verbose -- how much information to print (default: True).
+
 
     ***
 
     Original author: The Data Science Lab; Source: https://datasciencelab.wordpress.com/2013/12/12/clustering-with-k-means-in-python
-
     Weighted k-means author: Olivia Guest.
+    Weighted k-means algorithm: Bradley C. Love.
     """
 
     def counted(f):
@@ -78,7 +91,7 @@ class KMeans():
         wrapped.calls = 0
         return wrapped
 
-    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc, label=None, verbose=False):
+    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc, label='My Clustering', verbose=True):
 
         self.K = K
         if X is None:
@@ -243,8 +256,19 @@ class KMeans():
         self.clusters = clusters
         self.counts_per_cluster = counts_per_cluster
         if self.verbose:
-            print('\tNumber of unique items per cluster: ', [len(x) for x in self.clusters])
-            print('\tNumber of items per cluster: ', self.counts_per_cluster)
+            print('\tNumber of unique items per cluster: ' + Style.BRIGHT, end='')
+            print([len(x) for x in self.clusters], end='')
+            print(Style.RESET_ALL)
+            print('\tNumber of items per cluster: ' + Style.BRIGHT,  end='')
+            for i, c in enumerate(self.counts_per_cluster):
+                if i == 0:
+                    print('[', end = '')
+                print('%1.1f' % c, end = '')
+                if i == len(self.counts_per_cluster) - 1:
+                    print(']', end = '')
+                else:
+                    print(', ', end = '')
+            print(Style.RESET_ALL)
 
         # assert [np.count_nonzero(self.cluster_indices == i)\
         #         for i in range(self.K)] == [len(x) for x in self.clusters]
@@ -282,7 +306,16 @@ class KMeans():
         #         np.around(np.sum(self.scaling_factor))
         # assert np.around(np.sum(self.scaling_factor)) == 1
         if self.verbose:
-            print('\tScaling factors per cluster: ', self.scaling_factor)
+            print('\tScaling factors per cluster: ' + Style.BRIGHT,  end='')
+            for i, c in enumerate(self.scaling_factor):
+                if i == 0:
+                    print('[', end = '')
+                print('%1.1f' % c, end = '')
+                if i == len(self.scaling_factor) - 1:
+                    print(']', end = '')
+                else:
+                    print(', ', end = '')
+            print(Style.RESET_ALL)
 
     def _reevaluate_centers(self):
         """Update the controids (aka mu) per cluster."""
@@ -312,7 +345,7 @@ class KMeans():
                                      ' cluster(s). Try increasing the'\
                                      ' stickiness parameter (beta).')
             if self.verbose:
-                print('\tDistance between previous and current centroids: ', dist)
+                print('\tDistance between previous and current centroids: ' + Style.BRIGHT + str(dist) + Style.RESET_ALL)
 
         # Return true if the items in each cluster have not changed much since
         # the last time this was run
@@ -335,12 +368,8 @@ class KMeans():
         while not self._has_converged() and self.runs < max_runs:
             #   self._cluster_points.calls < max_runs:
             if self.verbose:
-                print('Run:', self.runs, ', alpha:', self.alpha,
-                    ', beta:', self.beta,)
-                if self.label:
-                    print('label:', self.label)
-                else:
-                    print()
+                print(Style.BRIGHT + '\nRun: ' + str(self.runs) + ', alpha: ' + str(self.alpha) +
+                    ', beta: ' + str(self.beta) + ', label: ' + self.label + Style.RESET_ALL)
             # While the algorithm has neither converged nor been run too many
             # times:
             # a) keep track of old centroids;
@@ -351,13 +380,25 @@ class KMeans():
             self._reevaluate_centers()
             self.runs += 1
 
-        print('The End!')
-        if self.label:
-            print('label:', self.label)
-        print('\tTotal runs: ', self.runs)
-        print('\tNumber of unique items per cluster: ',
-            [len(x) for x in self.clusters])
-        print('\tNumber of items per cluster: ', self.counts_per_cluster)
+        print(Style.BRIGHT + '\nThe End!' + Style.RESET_ALL)
+        print('\tLabel: ' + Style.BRIGHT + self.label + Style.RESET_ALL)
+        print('\tTotal runs:' + Style.BRIGHT, self.runs, Style.RESET_ALL)
+        # print('\tNumber of unique items per cluster: ',
+        #     [len(x) for x in self.clusters])
+        # print('\tNumber of items per cluster: ', self.counts_per_cluster)
+        print('\tNumber of unique items per cluster: ' + Style.BRIGHT, end='')
+        print([len(x) for x in self.clusters], end='')
+        print(Style.RESET_ALL)
+        print('\tNumber of items per cluster: ' + Style.BRIGHT,  end='')
+        for i, c in enumerate(self.counts_per_cluster):
+            if i == 0:
+                print('[', end = '')
+            print('%1.1f' % c, end = '')
+            if i == len(self.counts_per_cluster) - 1:
+                print(']', end = '')
+            else:
+                print(', ', end = '')
+        print(Style.RESET_ALL)
 
 class KPlusPlus(KMeans):
     """Augment the KMeans class with k-means++ capabilities.
