@@ -61,17 +61,18 @@ class KMeans():
     K       -- the number of clusters.
 
     Keyword arguments:
-    X       -- the data (default None; thus auto-generated, see below);
-    N       -- number of unique data points to generate (default: 0);
-    c       -- number of non-unique points represented by a data point (default:
+    X        -- the data (default None; thus auto-generated, see below);
+    N        -- number of unique data points to generate (default: 0);
+    c        -- number of non-unique points represented by a data point (default:
                None; to mean every data point is unique);
-    alpha   -- the exponent used to calculate the scaling factor (default: 0);
-    beta    -- the stickiness parameter used during time-averaging (default: 0);
-    dist    -- custom distance metric for calculating distances between points
+    alpha    -- the exponent used to calculate the scaling factor (default: 0);
+    beta     -- the stickiness parameter used during time-averaging (default: 0);
+    dist     -- custom distance metric for calculating distances between points
                (default: great circle distance);
-    label   -- offer extra information at runtime about what is being clustered
+    max_runs -- When to stop clustering, to avoid infinite loop (default: 200);
+    label    -- offer extra information at runtime about what is being clustered
                (default: 'My Clustering');
-    verbose -- how much information to print (default: True).
+    verbose  -- how much information to print (default: True).
 
 
     ***
@@ -91,7 +92,8 @@ class KMeans():
         wrapped.calls = 0
         return wrapped
 
-    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc, label='My Clustering', verbose=True):
+    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc,
+        max_runs= 200, label='My Clustering', verbose=True):
 
         self.K = K
         if X is None:
@@ -137,6 +139,9 @@ class KMeans():
         # How many counts are in each cluster:
         self.counts_per_cluster = [0 for x in range(self.K)]
 
+        # Use max_runs to stop running forever in cases of non-convergence:
+        self.max_runs = max_runs
+        # How many runs so far:
         self.runs = 0
         # The distance metric to use, a function that takes a and b and returns
         # the distrance between the two:
@@ -356,8 +361,6 @@ class KMeans():
         self.method = method
         X = self.X
         K = self.K
-        # Use max_runs to stop running forever in cases of non-convergence:
-        max_runs = 200
         # Previous centroids set to random values.
         self.old_mu = random.sample(X, K)
 
@@ -365,11 +368,12 @@ class KMeans():
             # If method of initialisation is not k++, use random centeroids.
             self.mu = random.sample(X, K)
 
-        while not self._has_converged() and self.runs < max_runs:
+        while not self._has_converged() and self.runs < self.max_runs:
             #   self._cluster_points.calls < max_runs:
             if self.verbose:
-                print(Style.BRIGHT + '\nRun: ' + str(self.runs) + ', alpha: ' + str(self.alpha) +
-                    ', beta: ' + str(self.beta) + ', label: ' + self.label + Style.RESET_ALL)
+                print(Style.BRIGHT + '\nRun: ' + str(self.runs) + ', alpha: ' +
+                    str(self.alpha) + ', beta: ' + str(self.beta) + ', label: '
+                    + self.label + Style.RESET_ALL)
             # While the algorithm has neither converged nor been run too many
             # times:
             # a) keep track of old centroids;
