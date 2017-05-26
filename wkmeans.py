@@ -73,6 +73,7 @@ class KMeans():
     label    -- offer extra information at runtime about what is being clustered
                (default: 'My Clustering');
     verbose  -- how much information to print (default: True).
+    mu       -- seed clusters, i.e., define a starting state (default: None).
 
 
     ***
@@ -93,7 +94,7 @@ class KMeans():
         return wrapped
 
     def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc,
-        max_runs= 200, label='My Clustering', verbose=True):
+        max_runs= 200, label='My Clustering', verbose=True, mu=None):
 
         self.K = K
         if X is None:
@@ -108,17 +109,22 @@ class KMeans():
             self.N = len(X)
 
         # The coordinates of the centroids:
-        self.mu = None
+        self.mu = mu
 
         # We need to keep track of previous centroids.
         self.old_mu = None
 
+        # What kind of initialisation we want, vanilla, seed, or k++ available:
+        self.method = 'random'
+
         # Numpy array of clusters containing their index and member items.
+        # if clusters is None:
+        # if True:
         self.clusters = None
         self.cluster_indices = np.asarray([None for i in self.X])
-
-        # What kind of initialisation we want, only vanilla or k++ available:
-        self.method = None
+        # else:
+        #     self.clusters = clusters
+        #     self.method = 'seed'
 
         # For scaling distances as a function of cluster size:
         # the power the cardinalities will be raised to;
@@ -221,8 +227,10 @@ class KMeans():
         # Give the title as a function of the initialisation method:
         if self.method == '++':
             title = 'K-means++'
-        else:
+        elif self.method == 'random':
             title = 'K-means with random initialization'
+        elif self.method == 'seed':
+            title = 'K-means seeded with pre-loaded clusters'
         pars = r'$N=%s, K=%s, \alpha=%s$' % (str(self.N), str(self.K),\
                str(self.alpha))
         plt.title('\n'.join([pars, title]), fontsize=16)
@@ -241,7 +249,7 @@ class KMeans():
         counts_per_cluster = [0 for i in range(self.K)]
 
         ########################################################################
-        #Firstly perform classical k-means, weighting the Euclidean distances.
+        #Firstly perform classical k-means, weighting the distances.
         ########################################################################
         for index, x in enumerate(self.X):
                 # For each data point x, find the minimum weighted distance to
@@ -315,7 +323,7 @@ class KMeans():
             for i, c in enumerate(self.scaling_factor):
                 if i == 0:
                     print('[', end = '')
-                print('%1.1f' % c, end = '')
+                print('%1.3f' % c, end = '')
                 if i == len(self.scaling_factor) - 1:
                     print(']', end = '')
                 else:
@@ -364,7 +372,7 @@ class KMeans():
         # Previous centroids set to random values.
         self.old_mu = random.sample(X, K)
 
-        if method != '++':
+        if method == 'random':
             # If method of initialisation is not k++, use random centeroids.
             self.mu = random.sample(X, K)
 
