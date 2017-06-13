@@ -47,12 +47,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import seaborn as sns
+#
+# def gc(a, b):
+#     """An example of what could be used as a distance metric.
+#     """
+#     from geopy.distance import great_circle
+#     return great_circle(a, b).km
 
-def gc(a, b):
+#
+def euclidean(a, b):
     """An example of what could be used as a distance metric.
     """
-    from geopy.distance import great_circle
-    return great_circle(a, b).km
+    return np.linalg.norm(a-b)
 
 class KMeans():
     """Class for running weighted k-means.
@@ -93,7 +99,7 @@ class KMeans():
         wrapped.calls = 0
         return wrapped
 
-    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=gc,
+    def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=euclidean,
         max_runs= 200, label='My Clustering', verbose=True, mu=None):
 
         self.K = K
@@ -344,10 +350,10 @@ class KMeans():
     def _has_converged(self):
         """Check if the items within each cluster have stabilised between two
         runs. This checks to see if the Euclidean distance between the centroids
-        is lower than a fixed constant (0.001).
+        is lower than a fixed constant.
         """
         # Calculate the distance between previous and current centroids.
-        dist = self.dist(np.asarray(self.mu), np.asarray(self.old_mu))
+        dist = np.linalg.norm(np.asarray(self.mu) - np.asarray(self.old_mu))
         if self.clusters:
             for clu in self.clusters:
                 # For each clusters, check the length. If zero, we have a
