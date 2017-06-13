@@ -347,7 +347,7 @@ class KMeans():
         is lower than a fixed constant (0.001).
         """
         # Calculate the distance between previous and current centroids.
-        dist = np.linalg.norm(np.asarray(self.mu)-np.asarray(self.old_mu))
+        dist = self.dist(np.asarray(self.mu), np.asarray(self.old_mu))
         if self.clusters:
             for clu in self.clusters:
                 # For each clusters, check the length. If zero, we have a
