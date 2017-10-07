@@ -1,5 +1,4 @@
-# This code runs the k-means++ algorithm on some test data and saves the
-# output to an image file in the same directory.
+"""Run k-means++ on test data and save output to image in same directory."""
 
 import numpy as np
 import wkmeans as km
@@ -15,8 +14,8 @@ startTime = datetime.now()
 N = 5000
 # Random counts because each data point is not unique and can even be "empty",
 # i.e., have a count of zero:
-# random_counts = np.random.randint(100, size=(N)) # integers for the counts
-random_counts = np.random.random_sample((N,)) * 100 # floats for the counts
+# random_counts = np.random.randint(100, size=(N))  # integers for the counts
+random_counts = np.random.random_sample((N,)) * 100  # floats for the counts
 
 # Initialise the class with some default values:
 kmeans = km.KPlusPlus(3, N=N, c=random_counts, alpha=3, beta=0.9)
@@ -36,5 +35,6 @@ kmeans.plot_clusters(kmeans.plot_clusters.calls)
 print 'The End!'
 print '\tRun time: ', datetime.now() - startTime
 print '\tTotal runs: ', kmeans._cluster_points.calls
-print '\tNumber of unique items per cluster: ', [len(x) for x in kmeans.clusters]
+print '\tNumber of unique items per cluster: ', [len(x) for x in
+                                                 kmeans.clusters]
 print '\tNumber of items per cluster: ', kmeans.counts_per_cluster
