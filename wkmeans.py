@@ -328,7 +328,7 @@ class KMeans():
         new_mu = []
         for k in self.clusters:
             # For each key, add a new centroid (mu) by calculating the cluster
-            #  mean.
+            # mean.
             new_mu.append(np.mean(k, axis=0))
         # Update the list of centroids that we just calculated.
         self.mu = new_mu
@@ -339,9 +339,7 @@ class KMeans():
         This checks to see if the distance between the centroids is lower than
         a fixed constant.
         """
-        # Calculate the distance between previous and current centroids.
-        dist = self.dist(self.mu, self.old_mu)
-        #  np.linalg.norm(np.asarray(self.mu) - np.asarray(self.old_mu))
+        diff = 1000
         if self.clusters:
             for clu in self.clusters:
                 # For each clusters, check the length. If zero, we have a
@@ -351,13 +349,20 @@ class KMeans():
                                      ' all points rushed away to other'
                                      ' cluster(s). Try increasing the'
                                      ' stickiness parameter (beta).')
+            # Calculate the mean distance between previous and current
+            # centroids.
+            diff = 0
+            for i in range(self.K):
+                diff += self.dist(self.mu[i].tolist(), self.old_mu[i].tolist())
+            diff /= self.K
+
             if self.verbose:
                 print('\tDistance between previous and current centroids: ' +
-                      Style.BRIGHT + str(dist) + Style.RESET_ALL)
+                      Style.BRIGHT + str(diff) + Style.RESET_ALL)
 
         # Return true if the items in each cluster have not changed much since
-        # the last time this was run
-        return dist < 0.00001
+        # the last time this was run:
+        return diff < 0.001
 
     def find_centers(self, method='random'):
         """Find the centroids per cluster until equilibrium."""
