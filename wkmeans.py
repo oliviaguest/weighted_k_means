@@ -11,7 +11,7 @@ Pseudo-code by Bradley C Love:
 scaling_{t_0}=1/k where k is number of clusters
 
 KITTY
-**find euclidean distance of each point to each centroid
+**find distance of each point to each centroid
 **multiply by scaling factor for each centroid
 **find closest scaled distance centroid for each item
 **update cluster centroids
@@ -44,7 +44,7 @@ import matplotlib.pyplot as plt
 
 def euclidean(a, b):
     """An example of what could be used as a distance metric."""
-    return np.linalg.norm(a - b)
+    return np.linalg.norm(np.asarray(a) - np.asarray(b))
 
 
 class KMeans():
@@ -169,9 +169,6 @@ class KMeans():
 
         # The SDs:
         cluster_std = [0.3, 0.3, 0.3]
-
-        # The number of Gaussians:
-        n_clusters = len(centers)
 
         # The number of points, recall we need double at the top point hence
         # 3/4 of points are being generated now.
@@ -339,11 +336,12 @@ class KMeans():
     def _has_converged(self):
         """Check if the items in clusters have stabilised between two runs.
 
-        This checks to see if the Euclidean distance between the centroids
-        is lower than a fixed constant.
+        This checks to see if the distance between the centroids is lower than
+        a fixed constant.
         """
         # Calculate the distance between previous and current centroids.
-        dist = np.linalg.norm(np.asarray(self.mu) - np.asarray(self.old_mu))
+        dist = self.dist(self.mu, self.old_mu)
+        #  np.linalg.norm(np.asarray(self.mu) - np.asarray(self.old_mu))
         if self.clusters:
             for clu in self.clusters:
                 # For each clusters, check the length. If zero, we have a
