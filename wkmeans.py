@@ -50,6 +50,8 @@ class KMeans():
                 clustered (default: 'My Clustering');
     verbose  -- how much information to print (default: True).
     mu       -- seed clusters, i.e., define a starting state (default: None).
+    max_diff -- maximum perceptible change between present and previous
+                centroids when checking if solution is stable (default: 0.001).
     """
 
     def counted(f):
