@@ -1,24 +1,13 @@
 """Weighted k-means algorithm.
 
-Original code for vanilla k-means and k-means++ found here:
+Code: Olivia Guest (weighted k-means) and
+      The Data Science Lab (k-means and k-means++)
+
+Algorithm: Bradley C. Love (weighted k-means)
+
+Original code for vanilla k-means and k-means++ can be found at:
 https://datasciencelab.wordpress.com/2013/12/12/clustering-with-k-means-in-python/
 https://datasciencelab.wordpress.com/2014/01/15/improved-seeding-for-clustering-with-k-means/
-
-Many modifications to allow for weighted k-means added by Olivia Guest.
-
-Pseudo-code by Bradley C Love:
-
-scaling_{t_0}=1/k where k is number of clusters
-
-KITTY
-**find distance of each point to each centroid
-**multiply by scaling factor for each centroid
-**find closest scaled distance centroid for each item
-**update cluster centroids
-**computer luce_choice_share based on above centroid counts
-**scaling_{next}=alpha*scaling_{current}+(1-alpha)*luce_choice_share
-if not stopping condition,
-  GOTO KITTY
 """
 
 from __future__ import division, print_function
@@ -27,19 +16,12 @@ import random
 import itertools
 import sklearn.datasets
 
-from colorama import Style
-
 import numpy as np
 import seaborn as sns
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 
-
-# def gc(a, b):
-#     """An example of what could be used as a distance metric.
-#     """
-#     from geopy.distance import great_circle
-#     return great_circle(a, b).km
+from colorama import Style
 
 
 def euclidean(a, b):
@@ -68,20 +50,13 @@ class KMeans():
                 clustered (default: 'My Clustering');
     verbose  -- how much information to print (default: True).
     mu       -- seed clusters, i.e., define a starting state (default: None).
-
-
-    ***
-
-    Original author: The Data Science Lab; Source:
-        https://datasciencelab.wordpress.com/2013/12/12/clustering-with-k-means-in-python
-    Weighted k-means author: Olivia Guest.
-    Weighted k-means algorithm: Bradley C. Love.
     """
 
     def counted(f):
         """Decorator for returning number of times a function has been called.
 
-        Author: FogleBird; Source: http://stackoverflow.com/a/21717396;
+        Code: FogleBird
+        Source: http://stackoverflow.com/a/21717396;
         """
         def wrapped(*args, **kwargs):
             wrapped.calls += 1
@@ -90,7 +65,8 @@ class KMeans():
         return wrapped
 
     def __init__(self, K, X=None, N=0, c=None, alpha=0, beta=0, dist=euclidean,
-                 max_runs=200, label='My Clustering', verbose=True, mu=None):
+                 max_runs=200, label='My Clustering', verbose=True, mu=None,
+                 max_diff=0.001):
         """Initialisation."""
         self.K = K
         if X is None:
@@ -148,6 +124,9 @@ class KMeans():
         # The distance metric to use, a function that takes a and b and returns
         # the distrance between the two:
         self.dist = dist
+        # The maximum difference between centroids from one run to the next
+        # which still counts as no change:
+        self.max_diff = max_diff
         # A label, to print out while running k-means, e.g., to distinguish a
         # specific instance of k-means, etc:
         self.label = label
@@ -196,8 +175,8 @@ class KMeans():
     def plot_clusters(self, snapshot='0'):
         """Plot colour-coded clusters using a scatterplot."""
         X = self.X
-        fig = plt.figure(figsize=(5, 5))
-        ax = plt.gca()
+        # fig = plt.figure(figsize=(5, 5))
+        # ax = plt.gca()
         palette = itertools.cycle(sns.color_palette())
 
         if self.mu and self.clusters:
@@ -362,7 +341,7 @@ class KMeans():
 
         # Return true if the items in each cluster have not changed much since
         # the last time this was run:
-        return diff < 0.001
+        return diff < self.max_diff
 
     def find_centers(self, method='random'):
         """Find the centroids per cluster until equilibrium."""
@@ -412,11 +391,7 @@ class KMeans():
 
 
 class KPlusPlus(KMeans):
-    """Augment the KMeans class with k-means++ capabilities.
-
-    Author: The Data Science Lab; Source:
-    https://datasciencelab.wordpress.com/2014/01/15/improved-seeding-for-clustering-with-k-means/.
-    """
+    """Augment the KMeans class with k-means++ capabilities."""
 
     def _dist_from_centers(self):
         """Calculate the distance of each point to the closest centroids."""
@@ -443,7 +418,7 @@ class KPlusPlus(KMeans):
     def plot_init_centers(self):
         """Plot the centers using a scatterplot."""
         X = self.X
-        fig = plt.figure(figsize=(5, 5))
+        # fig = plt.figure(figsize=(5, 5))
         plt.xlim(-1, 1)
         plt.ylim(-1, 1)
         plt.plot(zip(*X)[0], zip(*X)[1], '.', alpha=0.5)
