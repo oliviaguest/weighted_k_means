@@ -5,3 +5,6 @@ For more detailed information regarding the implementation, please refer to ```w
 
 ## Algorithm
 Details coming soon.
+
+## Authors
+Created by Olivia Guest and Bradley C. Love.
