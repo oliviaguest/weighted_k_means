@@ -14,4 +14,4 @@ before_script:
   - sleep 3 # give xvfb some time to start
 
 script:
-  - python example.py
+  - python tests/test.py

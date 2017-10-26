@@ -29,7 +29,7 @@ def euclidean(a, b):
     return np.linalg.norm(np.asarray(a) - np.asarray(b))
 
 
-class KMeans():
+class WKMeans():
     """Class for running weighted k-means.
 
     Required argument:
@@ -81,44 +81,33 @@ class KMeans():
         else:
             self.X = X
             self.N = len(X)
-
         # The coordinates of the centroids:
         self.mu = mu
-
         # We need to keep track of previous centroids.
         self.old_mu = None
-
         # What kind of initialisation we want, vanilla, seed, or k++ available:
-        self.method = 'random'
-
+        if self.mu is None:
+            self.method = 'random'
+        else:
+            self.method = 'manual'
         # Numpy array of clusters containing their index and member items.
-        # if clusters is None:
-        # if True:
         self.clusters = None
         self.cluster_indices = np.asarray([None for i in self.X])
-        # else:
-        #     self.clusters = clusters
-        #     self.method = 'seed'
-
         # For scaling distances as a function of cluster size:
         # the power the cardinalities will be raised to;
         self.alpha = alpha
         # and to scale the distances between points and centroids, which is
         # initialised to 1/k for all clusters.
         self.scaling_factor = np.ones((self.K)) / self.K
-
         # The stickiness used within the time-averaging.
         self.beta = beta
-
         # How many counts are represented by a single data point:
         if c is None:
             self.counts_per_data_point = [1 for x in self.X]
         else:
             self.counts_per_data_point = c
-
         # How many counts are in each cluster:
         self.counts_per_cluster = [0 for x in range(self.K)]
-
         # Use max_runs to stop running forever in cases of non-convergence:
         self.max_runs = max_runs
         # How many runs so far:
@@ -153,7 +142,7 @@ class KMeans():
 
         # The number of points, recall we need double at the top point hence
         # 3/4 of points are being generated now.
-        n_samples = int(0.75 * N)
+        n_samples = int(np.ceil(0.75 * N))
 
         data, labels_true = \
             sklearn.datasets.make_blobs(n_samples=n_samples,
@@ -392,8 +381,8 @@ class KMeans():
         print(Style.RESET_ALL)
 
 
-class KPlusPlus(KMeans):
-    """Augment the KMeans class with k-means++ capabilities."""
+class KPlusPlus(WKMeans):
+    """Augment the WKMeans class with k-means++ capabilities."""
 
     def _dist_from_centers(self):
         """Calculate the distance of each point to the closest centroids."""
