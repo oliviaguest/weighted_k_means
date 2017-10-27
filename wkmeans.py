@@ -17,7 +17,7 @@ import itertools
 import sklearn.datasets
 
 import numpy as np
-import seaborn as sns
+# import seaborn as sns
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 
@@ -168,7 +168,7 @@ class WKMeans():
         X = self.X
         # fig = plt.figure(figsize=(5, 5))
         # ax = plt.gca()
-        palette = itertools.cycle(sns.color_palette())
+        # palette = itertools.cycle(sns.color_palette())
 
         if self.mu and self.clusters:
             # If we have clusters and centroids, graph them.
@@ -178,7 +178,7 @@ class WKMeans():
             for m, clu in enumerate(clus):
                 # For each cluster: a) get a colour from the palette;
                 cs = cm.spectral(1. * m / K)
-                cs = next(palette)
+                # cs = next(palette)
                 # b) plot the data points in the cluster;
                 plt.plot(zip(*clus[m])[0], zip(*clus[m])[1], '.',
                          markersize=8, color=cs, alpha=0.5)
