@@ -1,4 +1,6 @@
 """Testing."""
+import os
+import random
 import unittest
 
 import numpy as np
@@ -70,8 +72,68 @@ class TestWKMeans(unittest.TestCase):
         random_counts = np.random.random_sample((N,)) * 100
         w = wkm.KPlusPlus(K, N=N, c=random_counts)
         data = w._init_gauss(N)
-
         self.assertTrue(len(data) == N)
+
+    def test_plot_clusters(self):
+        K = 3
+        N = 10
+        random_counts = np.random.random_sample((N,)) * 100
+        w = wkm.KPlusPlus(K, N=N, c=random_counts)
+        w.plot_clusters()
+        cwd = os.getcwd()
+        filename = '/kpp_N_%i_K_%i_alpha_%i_beta_%i_%i.png' % (w.N, w.K,
+                                                               w.alpha,
+                                                               w.beta,
+                                                               0)
+        self.assertTrue(cwd + filename)
+        os.remove(cwd + filename)
+
+    def test__cluster_points(self):
+        K = 3
+        N = 10
+        random_counts = np.random.random_sample((N,)) * 100
+        w = wkm.KPlusPlus(K, N=N, c=random_counts, verbose=False)
+        w.mu = random.sample(w.X, w.K)
+        self.assertTrue(w.clusters == None)
+        w._cluster_points()
+        self.assertTrue(len(w.clusters) == K)
+
+        K = 3
+        X = [[0, 0], [3, 3], [300, 300]]
+        # Because the data is so simplistic, I know that clusters will be:
+        clusters = [[[0, 0]], [[3, 3]], [[300, 300]]]
+        w = wkm.KPlusPlus(K, X=X, verbose=False)
+        w.mu = random.sample(w.X, w.K)
+        self.assertTrue(w.clusters == None)
+        w._cluster_points()
+        self.assertTrue(len(w.clusters) == K)
+        # Confirm clusters computed inside the object are identical (different
+        # order allowed) to those I know:
+        for c in w.clusters:
+            for t, test_c in enumerate(clusters):
+                if c == test_c:
+                    del clusters[t]
+        # Assert it has been consumed:
+        self.assertTrue(clusters == [])
+
+        K = 2
+        X = [[0, 0], [3, 3], [300, 300]]
+        # Because the data is so simplistic, I know that clusters will be:
+        clusters = [[[0, 0], [3, 3]], [[300, 300]]]
+        w = wkm.KPlusPlus(K, X=X, verbose=False)
+        w.mu = [[0, 0], [300, 300]]
+        self.assertTrue(w.clusters == None)
+        w._cluster_points()
+        self.assertTrue(len(w.clusters) == K)
+
+        # Confirm clusters computed inside the object are identical (different
+        # order allowed) to those I know:
+        for c in w.clusters:
+            for t, test_c in enumerate(clusters):
+                if c == test_c:
+                    del clusters[t]
+        # Assert it has been consumed:
+        self.assertTrue(clusters == [])
 
 
 if __name__ == '__main__':

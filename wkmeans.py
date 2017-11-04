@@ -13,7 +13,6 @@ https://datasciencelab.wordpress.com/2014/01/15/improved-seeding-for-clustering-
 from __future__ import division, print_function
 
 import random
-import itertools
 import sklearn.datasets
 
 import numpy as np
@@ -163,7 +162,7 @@ class WKMeans():
         return data
 
     @counted
-    def plot_clusters(self, snapshot='0'):
+    def plot_clusters(self, snapshot=0):
         """Plot colour-coded clusters using a scatterplot."""
         X = self.X
         # fig = plt.figure(figsize=(5, 5))
@@ -202,9 +201,10 @@ class WKMeans():
         plt.title('\n'.join([pars, title]), fontsize=16)
 
         # Finally, save the figure as a PNG.
-        plt.savefig('kpp_N%s_K%s_alpha%s_%s.png' % (str(self.N), str(self.K),
-                                                    str(self.alpha),
-                                                    str(snapshot)),
+        plt.savefig('kpp_N_%i_K_%i_alpha_%i_beta_%i_%i.png' % (self.N, self.K,
+                                                               self.alpha,
+                                                               self.beta,
+                                                               snapshot),
                     bbox_inches='tight',
                     dpi=200)
 
@@ -347,7 +347,6 @@ class WKMeans():
             self.mu = random.sample(X, K)
 
         while not self._has_converged() and self.runs < self.max_runs:
-            #   self._cluster_points.calls < max_runs:
             if self.verbose:
                 print(Style.BRIGHT + '\nRun: ' + str(self.runs) + ', alpha: ' +
                       str(self.alpha) + ', beta: ' +
