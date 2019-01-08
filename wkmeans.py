@@ -13,13 +13,11 @@ https://datasciencelab.wordpress.com/2014/01/15/improved-seeding-for-clustering-
 from __future__ import division, print_function
 
 import random
-import sklearn.datasets
 
-import numpy as np
-# import seaborn as sns
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
-
+import numpy as np
+import sklearn.datasets
 from colorama import Style
 
 
