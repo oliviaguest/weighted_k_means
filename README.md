@@ -8,7 +8,7 @@ For more detailed information regarding the implementation, please refer to ```w
 ## Algorithm
 Please refer to the preprint for details:
 
-[Guest, O., Frank J. Kanayet, Bradley C. Love (2017). Gerrymandering and Computational Redistricting. arXiv.](https://arxiv.org/abs/1711.04640)
+[Guest, O., Frank J. Kanayet, Bradley C. Love (2017). Cognitive Capacity Limits and Electoral Districting. arXiv.](https://arxiv.org/abs/1711.04640)
   
 ## Authors
 Created by Olivia Guest (code) and Bradley C. Love (algorithm).
