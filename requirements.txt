@@ -14,3 +14,6 @@ numpy == 1.11.0
 
 # wkmeans.py: 16
 scikit_learn == 0.18.1
+
+scipy == 1.2.0
+

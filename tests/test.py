@@ -93,7 +93,7 @@ class TestWKMeans(unittest.TestCase):
         N = 10
         random_counts = np.random.random_sample((N,)) * 100
         w = wkm.KPlusPlus(K, N=N, c=random_counts, verbose=False)
-        w.mu = random.sample(w.X, w.K)
+        w.mu = random.sample(list(w.X), w.K)
         self.assertTrue(w.clusters == None)
         w._cluster_points()
         self.assertTrue(len(w.clusters) == K)
