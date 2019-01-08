@@ -1,5 +1,7 @@
 """Run k-means++ on test data and save output to image in same directory."""
 
+from __future__ import division, print_function
+from datetime import datetime
 import numpy as np
 import wkmeans as wkm
 # If you base your code on this and put wkmeans in its own directory (called
@@ -7,7 +9,6 @@ import wkmeans as wkm
 # to import instead:
 # import weighted_k_means.wkmeans as wkm
 
-from datetime import datetime
 startTime = datetime.now()
 
 # Number of data points we want to generate:
@@ -32,9 +33,9 @@ wkmeans.find_centers(method='++')
 wkmeans.plot_clusters(wkmeans.plot_clusters.calls)
 
 # We're done so print some useful info:
-print 'The End!'
-print '\tRun time: ', datetime.now() - startTime
-print '\tTotal runs: ', wkmeans._cluster_points.calls
-print '\tNumber of unique items per cluster: ', [len(x) for x in
-                                                 wkmeans.clusters]
-print '\tNumber of items per cluster: ', wkmeans.counts_per_cluster
+print('The End!')
+print('\tRun time: ', datetime.now() - startTime)
+print('\tTotal runs: ', wkmeans._cluster_points.calls)
+print('\tNumber of unique items per cluster: ', [len(x) for x in
+                                                 wkmeans.clusters])
+print('\tNumber of items per cluster: ', wkmeans.counts_per_cluster)

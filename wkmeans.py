@@ -176,10 +176,10 @@ class WKMeans():
             K = self.K
             for m, clu in enumerate(clus):
                 # For each cluster: a) get a colour from the palette;
-                cs = cm.spectral(1. * m / K)
+                cs = cm.get_cmap("Spectral")(1. * m / K)
                 # cs = next(palette)
                 # b) plot the data points in the cluster;
-                plt.plot(zip(*clus[m])[0], zip(*clus[m])[1], '.',
+                plt.plot(list(zip(*clus[m]))[0], list(zip(*clus[m]))[1], '.',
                          markersize=8, color=cs, alpha=0.5)
                 # and c) plot the centroid of the cluster.
                 plt.plot(mu[m][0], mu[m][1], 'o', marker='*',
@@ -187,7 +187,7 @@ class WKMeans():
                          markeredgewidth=1.0)
         else:
             # Otheriwse, just graph the data.
-            plt.plot(zip(*X)[0], zip(*X)[1], '.', alpha=0.5)
+            plt.plot(list(zip(*X))[0], list(zip(*X))[1], '.', alpha=0.5)
 
         # Give the title as a function of the initialisation method:
         if self.method == '++':
@@ -340,7 +340,7 @@ class WKMeans():
         X = self.X
         K = self.K
         # Previous centroids set to random values.
-        self.old_mu = random.sample(X, K)
+        self.old_mu = random.sample(list(X), K)
 
         if method == 'random':
             # If method of initialisation is not k++, use random centeroids.
@@ -400,7 +400,7 @@ class KPlusPlus(WKMeans):
 
     def init_centers(self):
         """Initialise the centers."""
-        self.mu = random.sample(self.X, 1)
+        self.mu = random.sample(list(self.X), 1)
         while len(self.mu) < self.K:
             self._dist_from_centers()
             self.mu.append(self._choose_next_center())
@@ -411,7 +411,7 @@ class KPlusPlus(WKMeans):
         # fig = plt.figure(figsize=(5, 5))
         plt.xlim(-1, 1)
         plt.ylim(-1, 1)
-        plt.plot(zip(*X)[0], zip(*X)[1], '.', alpha=0.5)
-        plt.plot(zip(*self.mu)[0], zip(*self.mu)[1], 'ro')
+        plt.plot(list(zip(*X))[0], list(zip(*X))[1], '.', alpha=0.5)
+        plt.plot(list(zip(*self.mu))[0], list(zip(*self.mu))[1], 'ro')
         plt.savefig('kpp_init_N%s_K%s.png' % (str(self.N), str(self.K)),
                     bbox_inches='tight', dpi=200)
