@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sklearn.datasets
 from colorama import Style
-
+from tqdm import tqdm
 
 def euclidean(a, b):
     """An example of what could be used as a distance metric."""
@@ -216,7 +216,7 @@ class WKMeans():
         #######################################################################
         # Firstly perform classical k-means, weighting the distances.
         #######################################################################
-        for index, x in enumerate(self.X):
+        for index, x in tqdm(enumerate(self.X)):
                 # For each data point x, find the minimum weighted distance to
                 # cluster i from point x.
             bestmukey = min([(i[0],
